@@ -1,1 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>ZymLegend</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <h1>ZymLegend</h1>
 
+  <!-- Главное меню -->
+  <div id="menu" class="active">
+    <p id="accountStatus">Нет аккаунтов</p>
+    <button onclick="startSingle()">🎮 Играть Одиночный</button>
+    <button onclick="startOnline()">🌐 Играть Онлайн</button>
+    <button onclick="openAccounts()">👤 Аккаунты</button>
+    <button onclick="openSkins()">🎨 Скины</button>
+  </div>
+
+  <!-- Экран игры -->
+  <div id="game">
+    <button id="homeBtn" onclick="goHome()">🏠 Домой</button>
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+    <p id="status"></p>
+    <p id="xpStatus"></p>
+  </div>
+
+  <!-- Аккаунты -->
+  <div id="accounts">
+    <button onclick="goHome()">⬅ Назад</button>
+    <h2>Аккаунты</h2>
+    <button onclick="openProfile()">📲 Telegram WebApp</button>
+    <button onclick="openZLAuth()">🛡 ZLAccount</button>
+
+    <h3>Вход через Google</h3>
+    <div id="g_id_onload" 
+         data-client_id="🚨 ВСТАВЬ_СВОЙ_CLIENT_ID_ЗДЕСЬ.apps.googleusercontent.com" 
+         data-callback="handleGoogleResponse"></div>
+    <div class="g_id_signin" 
+         data-type="standard" 
+         data-size="large" 
+         data-theme="outline" 
+         data-text="signin_with" 
+         data-shape="rect" 
+         data-logo_alignment="left">
+    </div>
+  </div>
+
+  <!-- Вкладка скинов -->
+  <div id="skins">
+    <button onclick="goHome()">⬅ Назад</button>
+    <h2>Выбор скина</h2>
+    <div id="skinList"></div>
+  </div>
+
+  <!-- Профиль Telegram -->
+  <div id="profile">
+    <button onclick="openAccounts()">⬅ Назад</button>
+    <h2>Профиль Telegram</h2>
+    <p id="profileInfo">Загрузка...</p>
+  </div>
+
+  <!-- ZLAccount -->
+  <div id="zlAuth">
+    <button onclick="openAccounts()">⬅ Назад</button>
+    <h2>ZLAccount</h2>
+    <input id="zlLogin" class="inputBox" placeholder="Логин"><br/>
+    <input id="zlPass" class="inputBox" type="password" placeholder="Пароль"><br/>
+    <button onclick="zlRegister()">📝 Регистрация</button>
+    <button onclick="zlLoginFunc()">🔑 Вход</button>
+    <p id="zlMsg"></p>
+  </div>
+
+  <!-- Загрузка -->
+  <div id="loading">
+    <h2>Загрузка...</h2>
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Подключаем JS -->
+  <script src="game.js"></script>
+</body>
+</html>
