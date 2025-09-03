@@ -1,316 +1,167 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <title>ZymLegend</title>
-  <!-- Telegram WebApp SDK -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <!-- Google Identity Services -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <style>
-    body { margin:0; background:#111; color:#fff; font-family:Arial, sans-serif; text-align:center; }
-    #menu, #game, #accounts, #profile, #zlAuth, #loading { display:none; }
-    #menu.active, #game.active, #accounts.active, #profile.active, #zlAuth.active, #loading.active { display:block; }
-    button { margin:10px; padding:12px 22px; font-size:16px; border-radius:10px; border:none; cursor:pointer; }
-    #homeBtn { position:absolute; top:10px; left:10px; background:#ff4444; color:#fff; }
-    canvas { background:#222; display:block; margin:16px auto; }
-    .inputBox { margin:8px; padding:10px; font-size:16px; border-radius:8px; border:none; }
-    .spinner { margin:50px auto; width:50px; height:50px; border:5px solid #444; border-top:5px solid #0f0; border-radius:50%; animation:spin 1s linear infinite; }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-    #accountStatus { margin-top:8px; font-size:14px; color:#0f0; }
-  </style>
+<meta charset="UTF-8" />
+<title>ZymLegend</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+body{margin:0;background:#111;color:#fff;font-family:Arial,sans-serif;text-align:center;}
+#menu,#game,#accounts,#profile,#zlAuth,#loading,#skins{display:none;}
+#menu.active,#game.active,#accounts.active,#profile.active,#zlAuth.active,#loading.active,#skins.active{display:block;}
+button{margin:5px;padding:10px 18px;font-size:16px;border-radius:10px;border:none;cursor:pointer;}
+#homeBtn{position:absolute;top:10px;left:10px;background:#ff4444;color:#fff;}
+canvas{background:#222;display:block;margin:16px auto;}
+.inputBox{margin:5px;padding:8px;font-size:16px;border-radius:8px;border:none;}
+.spinner{margin:50px auto;width:50px;height:50px;border:5px solid #444;border-top:5px solid #0f0;border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{100%{transform: rotate(360deg);}}
+#accountStatus{margin-top:5px;font-size:14px;color:#0f0;}
+.skin-btn{margin:3px;padding:6px 12px;border-radius:6px;}
+</style>
 </head>
 <body>
-  <h1>ZymLegend</h1>
+<h1>ZymLegend</h1>
 
-  <!-- Главное меню -->
-  <div id="menu" class="active">
-    <p id="accountStatus">Нет аккаунтов</p>
-    <button onclick="startSingle()">🎮 Играть Одиночный</button>
-    <button onclick="startOnline()">🌐 Играть Онлайн</button>
-    <button onclick="openAccounts()">👤 Аккаунты</button>
-  </div>
+<!-- Главное меню -->
+<div id="menu" class="active">
+<p id="accountStatus">Нет аккаунтов</p>
+<button onclick="startSingle()">🎮 Играть Одиночный</button>
+<button onclick="startOnline()">🌐 Играть Онлайн</button>
+<button onclick="openAccounts()">👤 Аккаунты</button>
+<button onclick="openSkins()">🎨 Скины</button>
+</div>
 
-  <!-- Экран игры -->
-  <div id="game">
-    <button id="homeBtn" onclick="goHome()">🏠 Домой</button>
-    <canvas id="gameCanvas" width="600" height="400"></canvas>
-    <p id="status"></p>
-  </div>
+<!-- Экран игры -->
+<div id="game">
+<button id="homeBtn" onclick="goHome()">🏠 Домой</button>
+<canvas id="gameCanvas" width="600" height="400"></canvas>
+<p id="status"></p>
+<p id="xpStatus"></p>
+</div>
 
-  <!-- Экран аккаунтов -->
-  <div id="accounts">
-    <button onclick="goHome()">⬅ Назад</button>
-    <h2>Аккаунты</h2>
-    <button onclick="openProfile()">📲 Telegram WebApp</button>
-    <button onclick="openZLAuth()">🛡 ZLAccount</button>
+<!-- Аккаунты -->
+<div id="accounts">
+<button onclick="goHome()">⬅ Назад</button>
+<h2>Аккаунты</h2>
+<button onclick="openProfile()">📲 Telegram WebApp</button>
+<button onclick="openZLAuth()">🛡 ZLAccount</button>
+<h3>Вход через Google</h3>
+<div id="g_id_onload" data-client_id="https://913407850801-0fm9mo59pmbsj6dln94fs6o7pt3l9fuh.apps.googleusercontent.com/" data-callback="handleGoogleResponse"></div>
+<div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="signin_with" data-shape="rect" data-logo_alignment="left"></div>
+</div>
 
-    <!-- Google Login -->
-    <h3>Вход через Google</h3>
-    <div id="g_id_onload"
-         data-client_id="913407850801-0fm9mo59pmbsj6dln94fs6o7pt3l9fuh.apps.googleusercontent.com"
-         data-callback="handleGoogleResponse">
-    </div>
-    <div class="g_id_signin"
-         data-type="standard"
-         data-size="large"
-         data-theme="outline"
-         data-text="signin_with"
-         data-shape="rect"
-         data-logo_alignment="left">
-    </div>
-  </div>
+<!-- Вкладка скинов -->
+<div id="skins">
+<button onclick="goHome()">⬅ Назад</button>
+<h2>Выбор скина</h2>
+<div id="skinList"></div>
+</div>
 
-  <!-- Экран профиля Telegram -->
-  <div id="profile">
-    <button onclick="openAccounts()">⬅ Назад</button>
-    <h2>Профиль Telegram</h2>
-    <p id="profileInfo">Загрузка...</p>
-  </div>
+<!-- Профиль Telegram -->
+<div id="profile">
+<button onclick="openAccounts()">⬅ Назад</button>
+<h2>Профиль Telegram</h2>
+<p id="profileInfo">Загрузка...</p>
+</div>
 
-  <!-- Экран регистрации/входа ZLAccount -->
-  <div id="zlAuth">
-    <button onclick="openAccounts()">⬅ Назад</button>
-    <h2>ZLAccount</h2>
-    <input id="zlLogin" class="inputBox" placeholder="Логин"><br />
-    <input id="zlPass" class="inputBox" type="password" placeholder="Пароль"><br />
-    <button onclick="zlRegister()">📝 Регистрация</button>
-    <button onclick="zlLoginFunc()">🔑 Вход</button>
-    <p id="zlMsg"></p>
-  </div>
+<!-- ZLAccount -->
+<div id="zlAuth">
+<button onclick="openAccounts()">⬅ Назад</button>
+<h2>ZLAccount</h2>
+<input id="zlLogin" class="inputBox" placeholder="Логин"><br/>
+<input id="zlPass" class="inputBox" type="password" placeholder="Пароль"><br/>
+<button onclick="zlRegister()">📝 Регистрация</button>
+<button onclick="zlLoginFunc()">🔑 Вход</button>
+<p id="zlMsg"></p>
+</div>
 
-  <!-- Экран загрузки -->
-  <div id="loading">
-    <h2>Загрузка...</h2>
-    <div class="spinner"></div>
-  </div>
+<!-- Загрузка -->
+<div id="loading">
+<h2>Загрузка...</h2>
+<div class="spinner"></div>
+</div>
 
-  <script>
-    // Telegram WebApp
-    const tg = window.Telegram?.WebApp;
-    if (tg) tg.expand();
-    let tgUser = tg?.initDataUnsafe?.user || null;
+<script>
+/* ================== Аккаунты ================== */
+const tg = window.Telegram?.WebApp; if(tg) tg.expand(); let tgUser=tg?.initDataUnsafe?.user||null;
+let zlUser=localStorage.getItem("ZLAccount")?JSON.parse(localStorage.getItem("ZLAccount")):null;
+let googleUser=null;
 
-    // ZLAccount
-    let zlUser = localStorage.getItem("ZLAccount")
-      ? JSON.parse(localStorage.getItem("ZLAccount"))
-      : null;
+/* Decode JWT Google */
+function decodeJwt(token){const base64=token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');const json=decodeURIComponent(atob(base64).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join(''));return JSON.parse(json);}
+function handleGoogleResponse(response){const data=decodeJwt(response.credential);googleUser={id:data.sub,name:data.name,email:data.email,picture:data.picture};alert(`✅ Вход через Google: ${googleUser.name}`);updateAccountStatus();}
 
-    // Google
-    let googleUser = null;
+/* ================== Префиксы и скины ================== */
+function getZLPrefix(login){if(!login)return"";if(login==="ZymBa1")return"Creator";if(login==="Legend")return"Tester";return"";}
+function getPlayerColor(){if(playerSkin) return playerSkin.color;if(zlUser){const p=getZLPrefix(zlUser.login);if(p==="Creator")return"#ffd700";if(p==="Tester")return"#4da3ff";}return"lime";}
 
-    // =================== Декод JWT токена Google ===================
-    function decodeJwt(token) {
-      const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-      const json = decodeURIComponent(atob(base64).split('').map(c =>
-        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-      ).join(''));
-      return JSON.parse(json);
-    }
+/* ================== DOM ================== */
+const menu=document.getElementById("menu"); const gameDiv=document.getElementById("game");
+const accountsDiv=document.getElementById("accounts"); const profileDiv=document.getElementById("profile");
+const zlAuthDiv=document.getElementById("zlAuth"); const loadingDiv=document.getElementById("loading");
+const skinsDiv=document.getElementById("skins");
+const canvas=document.getElementById("gameCanvas"); const ctx=canvas.getContext("2d");
+const status=document.getElementById("status"); const xpStatus=document.getElementById("xpStatus");
+const accountStatus=document.getElementById("accountStatus");
 
-    // =================== Callback Google ===================
-    function handleGoogleResponse(response) {
-      const data = decodeJwt(response.credential);
-      googleUser = {
-        id: data.sub,
-        name: data.name,
-        email: data.email,
-        picture: data.picture
-      };
-      alert(`✅ Вход через Google: ${googleUser.name}`);
-      updateAccountStatus();
-    }
+/* ================== Статус аккаунтов ================== */
+function updateAccountStatus(){
+let parts=[]; if(tgUser) parts.push(`Telegram: @${tgUser.username||tgUser.first_name}`);
+if(zlUser){const pref=getZLPrefix(zlUser.login);const label=pref?`[${pref}] ${zlUser.login}`:zlUser.login;parts.push(`ZLAccount: ${label}`);}
+if(googleUser) parts.push(`Google: ${googleUser.name}`);
+accountStatus.innerText=parts.length?parts.join(" | "):"Нет аккаунтов";
+}
 
-    // =================== Префиксы ===================
-    function getZLPrefix(login) {
-      if (!login) return "";
-      if (login === "ZymBa1") return "Creator";
-      if (login === "Legend") return "Tester";
-      return "";
-    }
+/* ================== Навигация ================== */
+function startSingle(){menu.classList.remove("active");gameDiv.classList.add("active");initGame();}
+function startOnline(){alert("Онлайн режим в разработке!");}
+function openAccounts(){menu.classList.remove("active");accountsDiv.classList.add("active");}
+function openProfile(){accountsDiv.classList.remove("active");profileDiv.classList.add("active");if(tgUser){document.getElementById("profileInfo").innerHTML=`<b>ID:</b> ${tgUser.id}<br><b>Имя:</b> ${tgUser.first_name||""} ${tgUser.last_name||""}<br><b>Username:</b> @${tgUser.username||"нет"}`;}else{document.getElementById("profileInfo").innerText="Данные Telegram не получены ❌";}}
+function openZLAuth(){accountsDiv.classList.remove("active");zlAuthDiv.classList.add("active");}
+function openSkins(){menu.classList.remove("active");skinsDiv.classList.add("active");renderSkins();}
+function goHome(){gameActive=false;menu.classList.add("active");gameDiv.classList.remove("active");accountsDiv.classList.remove("active");profileDiv.classList.remove("active");zlAuthDiv.classList.remove("active");loadingDiv.classList.remove("active");skinsDiv.classList.remove("active");updateAccountStatus();}
 
-    function getPlayerColor() {
-      if (zlUser) {
-        const p = getZLPrefix(zlUser.login);
-        if (p === "Creator") return "#ffd700"; // золото
-        if (p === "Tester") return "#4da3ff"; // синий
-      }
-      return "lime"; // стандарт
-    }
+/* ================== ZLAccount ================== */
+function zlRegister(){const login=document.getElementById("zlLogin").value.trim();const pass=document.getElementById("zlPass").value.trim();const msg=document.getElementById("zlMsg");if(!login||!pass){msg.innerText="Введите логин и пароль!";return;} zlUser={login,pass};localStorage.setItem("ZLAccount",JSON.stringify(zlUser));msg.innerText="✅ Регистрация успешна!";updateAccountStatus();}
+function zlLoginFunc(){const login=document.getElementById("zlLogin").value.trim();const pass=document.getElementById("zlPass").value.trim();const msg=document.getElementById("zlMsg");const stored=localStorage.getItem("ZLAccount");if(!stored){msg.innerText="Нет зарегистрированных аккаунтов!";return;}const user=JSON.parse(stored);if(user.login===login&&user.pass===pass){zlUser=user;msg.innerText="✅ Вход успешен!";updateAccountStatus();}else{msg.innerText="❌ Неверный логин или пароль!";}}
 
-    // =================== DOM ===================
-    const menu = document.getElementById("menu");
-    const gameDiv = document.getElementById("game");
-    const accountsDiv = document.getElementById("accounts");
-    const profileDiv = document.getElementById("profile");
-    const zlAuthDiv = document.getElementById("zlAuth");
-    const loadingDiv = document.getElementById("loading");
+/* ================== Скины ================== */
+const availableSkins=[{name:"Default",color:"lime"},{name:"Red",color:"red"},{name:"Blue",color:"blue"},{name:"Gold",color:"#ffd700"}];
+let playerSkin=JSON.parse(localStorage.getItem("playerSkin"))||availableSkins[0];
+function renderSkins(){const list=document.getElementById("skinList");list.innerHTML="";availableSkins.forEach(s=>{const btn=document.createElement("button");btn.className="skin-btn";btn.innerText=s.name;btn.style.backgroundColor=s.color;btn.onclick=()=>{playerSkin=s;localStorage.setItem("playerSkin",JSON.stringify(playerSkin));alert(`Выбран скин: ${s.name}`);}});list.appendChild(btn);});}
 
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-    const status = document.getElementById("status");
-    const accountStatus = document.getElementById("accountStatus");
+/* ================== Игровой цикл ================== */
+let player,bullets=[],enemies=[],gameActive=false,xp=0,level=1;
+let mouseX=0,mouseY=0; const keys={};
+document.addEventListener("keydown",e=>keys[e.key]=true);
+document.addEventListener("keyup",e=>keys[e.key]=false);
+canvas.addEventListener("mousemove",e=>{const r=canvas.getBoundingClientRect();mouseX=e.clientX-r.left;mouseY=e.clientY-r.top;});
+document.addEventListener("click",e=>{if(!gameActive)return;const r=canvas.getBoundingClientRect();const tx=e.clientX-r.left,ty=e.clientY-r.top;const dx=tx-player.x,dy=ty-player.y;const d=Math.hypot(dx,dy)||1;bullets.push({x:player.x,y:player.y,dx:(dx/d)*6,dy:(dy/d)*6});});
 
-    // =================== Статус аккаунтов ===================
-    function updateAccountStatus() {
-      const parts = [];
-      if (tgUser) parts.push(`Telegram: @${tgUser.username || tgUser.first_name}`);
-      if (zlUser) {
-        const pref = getZLPrefix(zlUser.login);
-        const label = pref ? `[${pref}] ${zlUser.login}` : zlUser.login;
-        parts.push(`ZLAccount: ${label}`);
-      }
-      if (googleUser) {
-        parts.push(`Google: ${googleUser.name}`);
-      }
-      accountStatus.innerText = parts.length ? parts.join(" | ") : "Нет аккаунтов";
-    }
-    updateAccountStatus();
-
-    // =================== Навигация ===================
-    function startSingle() {
-      menu.classList.remove("active");
-      gameDiv.classList.add("active");
-      player = { x: 300, y: 200, size: 20, speed: 3, hp: 100 };
-      bullets = [];
-      enemies = [];
-      spawnEnemies(5);
-      gameActive = true;
-      gameLoop();
-    }
-
-    function startOnline() { alert("Онлайн режим в разработке!"); }
-    function openAccounts() { menu.classList.remove("active"); accountsDiv.classList.add("active"); }
-    function openProfile() { accountsDiv.classList.remove("active"); profileDiv.classList.add("active"); }
-    function openZLAuth() { accountsDiv.classList.remove("active"); zlAuthDiv.classList.add("active"); }
-    function goHome() {
-      gameActive = false;
-      menu.classList.add("active");
-      gameDiv.classList.remove("active");
-      accountsDiv.classList.remove("active");
-      profileDiv.classList.remove("active");
-      zlAuthDiv.classList.remove("active");
-      loadingDiv.classList.remove("active");
-      updateAccountStatus();
-    }
-
-    // =================== ZLAccount ===================
-    function zlRegister() {
-      const login = document.getElementById("zlLogin").value.trim();
-      const pass  = document.getElementById("zlPass").value.trim();
-      const msg = document.getElementById("zlMsg");
-      if (!login || !pass) { msg.innerText = "Введите логин и пароль!"; return; }
-      zlUser = { login, pass };
-      localStorage.setItem("ZLAccount", JSON.stringify(zlUser));
-      msg.innerText = "✅ Регистрация успешна!";
-      updateAccountStatus();
-    }
-    function zlLoginFunc() {
-      const login = document.getElementById("zlLogin").value.trim();
-      const pass  = document.getElementById("zlPass").value.trim();
-      const msg = document.getElementById("zlMsg");
-      const stored = localStorage.getItem("ZLAccount");
-      if (!stored) { msg.innerText = "Нет зарегистрированных аккаунтов!"; return; }
-      const user = JSON.parse(stored);
-      if (user.login === login && user.pass === pass) {
-        zlUser = user;
-        msg.innerText = "✅ Вход успешен!";
-        updateAccountStatus();
-      } else { msg.innerText = "❌ Неверный логин или пароль!"; }
-    }
-
-    // =================== Игра ===================
-    let player, bullets, enemies, gameActive;
-    let mouseX = 0, mouseY = 0;
-    const keys = {};
-    document.addEventListener("keydown", e => keys[e.key] = true);
-    document.addEventListener("keyup", e => keys[e.key] = false);
-
-    canvas.addEventListener("mousemove", e => {
-      const r = canvas.getBoundingClientRect();
-      mouseX = e.clientX - r.left;
-      mouseY = e.clientY - r.top;
-    });
-
-    document.addEventListener("click", e => {
-      if (!gameActive) return;
-      const r = canvas.getBoundingClientRect();
-      const tx = e.clientX - r.left, ty = e.clientY - r.top;
-      const dx = tx - player.x, dy = ty - player.y;
-      const d = Math.hypot(dx, dy) || 1;
-      bullets.push({ x: player.x, y: player.y, dx: (dx/d)*6, dy: (dy/d)*6 });
-    });
-
-    function spawnEnemies(n) {
-      enemies = [];
-      for (let i=0; i<n; i++) {
-        enemies.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, size:20, hp:50, speed:1 });
-      }
-    }
-
-    function update() {
-      if (keys["w"]) player.y -= player.speed;
-      if (keys["s"]) player.y += player.speed;
-      if (keys["a"]) player.x -= player.speed;
-      if (keys["d"]) player.x += player.speed;
-
-      bullets.forEach(b => { b.x += b.dx; b.y += b.dy; });
-
-      enemies.forEach(e => {
-        const dx = player.x - e.x, dy = player.y - e.y;
-        const d = Math.hypot(dx, dy) || 1;
-        e.x += (dx/d)*e.speed;
-        e.y += (dy/d)*e.speed;
-        if (d < 25) player.hp -= 0.2;
-      });
-
-      bullets.forEach(b => {
-        enemies.forEach(e => {
-          if (b.x > e.x-e.size && b.x<e.x+e.size && b.y>e.y-e.size && b.y<e.y+e.size) {
-            e.hp -= 10; b.remove = true;
-          }
-        });
-      });
-
-      enemies = enemies.filter(e => e.hp > 0);
-      bullets = bullets.filter(b => !b.remove);
-
-      status.innerText = `HP: ${Math.floor(player.hp)} | Врагов: ${enemies.length}`;
-      if (player.hp<=0) { alert("Ты проиграл!"); goHome(); }
-    }
-
-    function draw() {
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-
-      ctx.fillStyle = getPlayerColor();
-      ctx.beginPath(); ctx.arc(player.x, player.y, player.size, 0, Math.PI*2); ctx.fill();
-
-      let label = "";
-      if (zlUser) {
-        const pref = getZLPrefix(zlUser.login);
-        label = pref ? `[${pref}] ${zlUser.login}` : zlUser.login;
-      } else if (googleUser) {
-        label = googleUser.name;
-      } else if (tgUser) {
-        label = tgUser.username ? `@${tgUser.username}` : tgUser.first_name;
-      }
-      if (label) {
-        ctx.font="14px Arial"; ctx.textAlign="center"; ctx.fillStyle="#fff";
-        ctx.fillText(label, player.x, player.y-player.size-6);
-      }
-
-      enemies.forEach(e => {
-        ctx.fillStyle="red"; ctx.beginPath(); ctx.arc(e.x, e.y, e.size, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle="#000"; ctx.font="12px Arial"; ctx.textAlign="center"; ctx.fillText("T", e.x, e.y+4);
-      });
-
-      ctx.fillStyle="yellow"; bullets.forEach(b=>ctx.fillRect(b.x,b.y,5,3));
-    }
-
-    function gameLoop() {
-      if (!gameActive) return;
-      update(); draw(); requestAnimationFrame(gameLoop);
-    }
-  </script>
+/* ================== Инициализация игры ================== */
+function initGame(){
+player={x:300,y:200,size:20,health:100,speed:3};
+bullets=[];enemies=[];xp=0;level=1;spawnEnemies(5);gameActive=true;gameLoop();updateXP();}
+function spawnEnemies(n){enemies=[];for(let i=0;i<n;i++){enemies.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,size:20,hp:50,speed:1+(Math.random()),type:i%3===0?"boss":i%3===1?"blue":"red"});}}
+function updateXP(){xpStatus.innerText=`XP: ${xp} | Level: ${level}`;}
+function gameLoop(){if(!gameActive)return;update();draw();requestAnimationFrame(gameLoop);}
+function update(){
+if(keys["w"])player.y-=player.speed;if(keys["s"])player.y+=player.speed;if(keys["a"])player.x-=player.speed;if(keys["d"])player.x+=player.speed;
+bullets.forEach(b=>{b.x+=b.dx;b.y+=b.dy;});
+enemies.forEach(e=>{const dx=player.x-e.x,dy=player.y-e.y,d=Math.hypot(dx,dy)||1;e.x+=(dx/d)*e.speed;e.y+=(dy/d)*e.speed;if(d<25)player.health-=0.3;});
+bullets.forEach(b=>{enemies.forEach(e=>{if(b.x>e.x-e.size&&b.x<e.x+e.size&&b.y>e.y-e.size&&b.y<e.y+e.size){e.hp-=10;b.remove=true;if(e.hp<=0){xp+=10;if(xp>=level*50){level++;player.health+=20;}updateXP();}}});});
+enemies=enemies.filter(e=>e.hp>0);bullets=bullets.filter(b=>!b.remove);status.innerText=`HP: ${Math.floor(player.health)} | Врагов: ${enemies.length}`;
+if(player.health<=0){alert("Ты проиграл!");goHome();}
+if(enemies.length===0){setTimeout(()=>spawnEnemies(5),3000;)}
+}
+function draw(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+ctx.fillStyle=getPlayerColor();ctx.beginPath();ctx.arc(player.x,player.y,player.size,0,Math.PI*2);ctx.fill();
+let label="";if(zlUser){const pref=getZLPrefix(zlUser.login);label=pref?`[${pref}] ${zlUser.login}`:zlUser.login;}else if(googleUser){label=googleUser.name;}else if(tgUser){label=tgUser.username?`@${tgUser.username}`:tgUser.first_name;}
+if(label){ctx.font="14px Arial";ctx.textAlign="center";ctx.fillStyle="#fff";ctx.fillText(label,player.x,player.y-player.size-6);}
+enemies.forEach(e=>{ctx.fillStyle=e.type==="red"?"red":e.type==="blue"?"blue":"gold";ctx.beginPath();ctx.arc(e.x,e.y,e.size,0,Math.PI*2);ctx.fill();ctx.fillStyle="#000";ctx.font="12px Arial";ctx.textAlign="center";ctx.fillText(e.type==="red"?"T":e.type==="blue"?"B":"Boss",e.x,e.y+4);});
+ctx.fillStyle="yellow";bullets.forEach(b=>ctx.fillRect(b.x,b.y,5,3));
+}
+</script>
 </body>
 </html>
