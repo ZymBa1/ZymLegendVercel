@@ -2,9 +2,9 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <title>ZymLegend</title>
+  <title>ZymLegend Online</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
 
-  <!-- Стили -->
   <link rel="stylesheet" href="style.css">
 
   <!-- Telegram WebApp SDK -->
@@ -14,7 +14,7 @@
 </head>
 <body>
   <header>
-    <h1 id="gameTitle">ZymLegend</h1>
+    <h1 id="gameTitle">ZymLegend Online</h1>
     <div id="topBar">
       <span id="accountStatus">Нет аккаунтов</span>
       <button id="settingsBtn">⚙️ Настройки</button>
@@ -22,81 +22,103 @@
   </header>
 
   <main>
-    <!-- Меню -->
+    <!-- Menu -->
     <section id="menu" class="screen active">
       <div class="menuButtons">
-        <button onclick="startSingle()">🎮 Играть Одиночный</button>
-        <button onclick="startOnline()">🌐 Играть Онлайн</button>
-        <button onclick="openAccounts()">👤 Аккаунты</button>
-        <button onclick="openSkins()">🎨 Скины</button>
+        <button onclick="startSingle()">Играть Одиночный</button>
+        <button onclick="openServers()">Онлайн </button>
+        <button onclick="openAccounts()">Аккаунты</button>
+        <button onclick="openSkins()">Скины</button>
+      </div>
+      <div id="currentServerBadge" class="badge"></div>
+    </section>
+
+    <!-- Servers browser -->
+    <section id="servers" class="screen">
+      <button class="backBtn" onclick="openMenu()">⬅ Назад</button>
+      <h2>Серверы</h2>
+      <div class="serverActions">
+        <button onclick="openAddServer()">＋ Добавить сервер</button>
+      </div>
+      <div id="serverList" class="serverList"></div>
+
+      <!-- Modal -->
+      <div id="serverModal" class="modal hidden">
+        <div class="modalBox">
+          <h3 id="serverModalTitle">Добавить сервер</h3>
+          <label>Название</label>
+          <input id="srvName" class="inputBox" placeholder="My Server">
+          <label>Адрес (ws:// или wss://)</label>
+          <input id="srvAddr" class="inputBox" placeholder="wss://example.com">
+          <label>Язык</label>
+          <select id="srvLang" class="inputBox">
+            <option value="ru">Русский</option>
+            <option value="en">English</option>
+          </select>
+          <div class="modalBtns">
+            <button onclick="closeServerModal()">Отмена</button>
+            <button id="serverModalSaveBtn">Сохранить</button>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- Игра -->
+    <!-- Game -->
     <section id="game" class="screen">
       <button id="homeBtn" onclick="goHome()" class="homeBtn">🏠 Домой</button>
-      <canvas id="gameCanvas" width="800" height="500"></canvas>
+      <canvas id="gameCanvas" width="900" height="520"></canvas>
       <div id="hud">
         <div id="status">HP: 100 | Врагов: 0</div>
         <div id="xpStatus">XP: 0 | Level: 1</div>
+        <div id="serverConnection" class="muted">Offline</div>
       </div>
 
-      <!-- Мобильный джойстик движения -->
-      <div id="joystickMove" class="joystick" draggable="false" aria-hidden="true">
-        <div class="stick"></div>
-      </div>
-      <!-- Мобильный джойстик для стрельбы -->
-      <div id="joystickShoot" class="joystick" draggable="false" aria-hidden="true">
-        <div class="stick"></div>
-      </div>
+      <!-- Joysticks -->
+      <div id="joystickMove" class="joystick" draggable="false"><div class="stick"></div></div>
+      <div id="joystickShoot" class="joystick" draggable="false"><div class="stick"></div></div>
     </section>
 
-    <!-- Аккаунты -->
+    <!-- Accounts -->
     <section id="accounts" class="screen">
       <button class="backBtn" onclick="openMenu()">⬅ Назад</button>
       <h2>Аккаунты</h2>
       <div class="accountsBlock">
-        <button onclick="connectTelegram()">📲 Telegram WebApp</button>
-        <button onclick="openZLAuth()">🛡 ZLAccount</button>
+        <button onclick="connectTelegram()">Telegram WebApp</button>
+        <button onclick="openZLAuth()">ZLAccount</button>
       </div>
 
       <h3>Вход через Google</h3>
-      <!-- Замените на ваш client id -->
       <div id="g_id_onload"
-           data-client_id="https://913407850801-0fm9mo59pmbsj6dln94fs6o7pt3l9fuh.apps.googleusercontent.com/"
+           data-client_id="913407850801-0fm9mo59pmbsj6dln94fs6o7pt3l9fuh.apps.googleusercontent.com/"
            data-callback="handleGoogleResponse"></div>
       <div class="g_id_signin"
-           data-type="standard"
-           data-size="large"
-           data-theme="outline"
-           data-text="signin_with"
-           data-shape="rect"
-           data-logo_alignment="left"></div>
+           data-type="standard" data-size="large" data-theme="outline"
+           data-text="signin_with" data-shape="rect" data-logo_alignment="left"></div>
 
       <div style="margin-top:12px;">
         <button onclick="logoutAll()">Выйти из всех аккаунтов</button>
       </div>
     </section>
 
-    <!-- ZLAccount (рег/вход) -->
+    <!-- ZLAccount -->
     <section id="zlAuth" class="screen">
       <button class="backBtn" onclick="openAccounts()">⬅ Назад</button>
       <h2>ZLAccount</h2>
       <input id="zlLogin" class="inputBox" placeholder="Логин"><br/>
       <input id="zlPass" type="password" class="inputBox" placeholder="Пароль"><br/>
-      <button onclick="zlRegister()">📝 Регистрация</button>
-      <button onclick="zlLoginFunc()">🔑 Вход</button>
+      <button onclick="zlRegister()">Регистрация</button>
+      <button onclick="zlLoginFunc()">Вход</button>
       <p id="zlMsg"></p>
     </section>
 
-    <!-- Скины -->
+    <!-- Skins -->
     <section id="skins" class="screen">
       <button class="backBtn" onclick="openMenu()">⬅ Назад</button>
       <h2>Скины</h2>
       <div id="skinList" class="skinList"></div>
     </section>
 
-    <!-- Настройки -->
+    <!-- Settings -->
     <section id="settings" class="screen">
       <button class="backBtn" onclick="closeSettings()">⬅ Назад</button>
       <h2>Настройки</h2>
@@ -110,6 +132,16 @@
       </div>
 
       <div class="settingSection">
+        <h3>Цвет фона</h3>
+        <select id="bgColorSelect">
+          <option value="#111">Черный</option>
+          <option value="#001f3f">Синий</option>
+          <option value="#013220">Зеленый</option>
+          <option value="#2e003e">Фиолетовый</option>
+        </select>
+      </div>
+
+      <div class="settingSection">
         <h3>Управление (ПК)</h3>
         <div id="keyMapList"></div>
         <p class="hint">Нажми "Изменить" и затем любую клавишу, чтобы переназначить.</p>
@@ -118,7 +150,7 @@
       <div class="settingSection">
         <h3>Управление (Телефон)</h3>
         <label><input type="checkbox" id="enableShootJoystick"> Включить джойстик для стрельбы</label><br/>
-        <label><input type="checkbox" id="movableJoysticks"> Разрешить перемещение джойстиков (перетаскивание)</label>
+        <label><input type="checkbox" id="movableJoysticks"> Разрешить перемещение джойстиков</label>
         <div class="hint">Перемещай джойстики в игровом экране, их позиция сохранится.</div>
       </div>
 
@@ -135,13 +167,8 @@
     </section>
   </main>
 
-  <footer>
-    <small>ZymLegend — Global Update 1.0</small>
-  </footer>
+  <footer><small>ZymLegend — Fix update 1.1</small></footer>
 
-  <!-- Скрипт игры -->
   <script src="game.js"></script>
 </body>
 </html>
-
-
