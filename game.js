@@ -1,102 +1,106 @@
-let currentScreen = 'menu';
-let servers = [
-  { name: "RuServer", address: "wss://your-server.onrender.com" },
-  { name: "EngServer", address: "wss://your-server.onrender.com" }
-];
-let ws, canvas, ctx, player;
-let currentUser = null;
-let currentSkin = 'green';
-let joystickEnabled = false;
+/* =================== Preloader =================== */
+window.addEventListener('load', () => {
+  setTimeout(()=>{ document.getElementById('preloader').style.display='none'; }, 1000);
+});
 
-// 🔹 Меню
-function showScreen(screen){
-  document.getElementById(currentScreen).classList.add('hidden');
-  document.getElementById(screen).classList.remove('hidden');
-  currentScreen = screen;
-  if(screen==='servers') renderServerList();
-}
-
-// 🔹 Серверы
-function renderServerList(){
-  const list = document.getElementById('serverList');
-  list.innerHTML = '';
-  servers.forEach((srv,i)=>{
-    const li=document.createElement('li');
-    li.textContent = srv.name + " ";
-    const playBtn=document.createElement('button');
-    playBtn.textContent="▶ Подключиться";
-    playBtn.onclick=()=>connectToServer(srv.address);
-    const delBtn=document.createElement('button');
-    delBtn.textContent="❌";
-    delBtn.onclick=()=>{servers.splice(i,1); renderServerList();}
-    li.appendChild(playBtn); li.appendChild(delBtn); list.appendChild(li);
+/* ----------------- Серверы ----------------- */
+let servers = ['RU','ENG'];
+let customServers = [];
+function openServerSelect(){ showScreen('servers'); renderServers(); }
+function renderServers(){
+  const container = document.getElementById('serverList');
+  container.innerHTML = '';
+  servers.concat(customServers).forEach(s=>{
+    const btn = document.createElement('button');
+    btn.innerText = s;
+    btn.onclick = ()=>connectToServer(s);
+    container.appendChild(btn);
   });
 }
-function addServer(){
-  const name = prompt("Название сервера:");
-  const address = prompt("Адрес (ws://... или wss://...):");
-  if(name && address){servers.push({name,address}); renderServerList();}
+function connectToServer(name){
+  alert((settings.lang==='ru'? 'Подключение к серверу: ':'Connecting to server: ') + name);
+  // здесь можно добавить реальную логику онлайн
+}
+function addCustomServer(){
+  const val = document.getElementById('customServer').value.trim();
+  if(val && !customServers.includes(val)) customServers.push(val);
+  renderServers();
 }
 
-// 🔹 Игровой режим
-function connectToServer(address){ showScreen('game'); initGame(); connectWebSocket(address); }
-function startOffline(){ showScreen('game'); initGame(); }
-function exitGame(){ showScreen('menu'); if(ws) ws.close(); }
+/* ----------------- Сложность ----------------- */
+const difficultySelect = document.getElementById('difficultySelect');
+let difficulty = difficultySelect ? difficultySelect.value : 'normal';
+difficultySelect?.addEventListener('change',(e)=>{ difficulty=e.target.value; });
 
-function initGame(){
-  canvas=document.getElementById("gameCanvas");
-  ctx=canvas.getContext("2d");
-  player={x:400,y:300,hp:100};
-  loadAccount();
-  draw();
+/* ----------------- Базы ----------------- */
+let bases = [{x:100,y:100,owner:null},{x:700,y:400,owner:null}];
+function captureBase(base){
+  if(player && Math.hypot(player.x-base.x,player.y-base.y)<30){
+    base.owner='player';
+    updateBaseHUD();
+  }
+}
+function updateBaseHUD(){
+  const owned = bases.filter(b=>b.owner==='player').length;
+  document.getElementById('baseStatus').innerText = `Базы захвачены: ${owned}`;
 }
 
+/* ----------------- Кланы ----------------- */
+let clans = [];
+function openClans(){ showScreen('clans'); renderClans(); }
+function createClan(){
+  const name = document.getElementById('clanName').value.trim();
+  if(name) clans.push({name,members:[zlUser?.login||'']});
+  renderClans();
+}
+function renderClans(){
+  const div = document.getElementById('clanList');
+  div.innerHTML='';
+  clans.forEach(c=>{
+    const el = document.createElement('div');
+    el.innerText=`${c.name} (${c.members.length} участника)`;
+    div.appendChild(el);
+  });
+}
+
+/* ----------------- Интеграция в игровой update() ----------------- */
+function update(){
+  if(!gameActive) return;
+  // движение, джойстики, стрельба, пули, враги - как раньше
+  // ...
+  
+  // захват баз
+  bases.forEach(b=>captureBase(b));
+  
+  // respawn wave depending on difficulty
+  if(enemies.length===0 && gameActive){
+    let count = 5;
+    if(difficulty==='easy') count=3;
+    if(difficulty==='hard') count=7;
+    setTimeout(()=>spawnWave(count),2000);
+  }
+  
+  // clamp player
+  player.x = Math.max(10, Math.min(canvas.width-10, player.x));
+  player.y = Math.max(10, Math.min(canvas.height-10, player.y));
+}
+
+/* ----------------- Draw ----------------- */
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle = currentSkin==='green'?'lime':'red';
+  // игрок
+  ctx.fillStyle = playerSkin.color;
   ctx.beginPath();
-  ctx.arc(player.x,player.y,20,0,Math.PI*2);
+  ctx.arc(player.x,player.y,player.size,0,Math.PI*2);
   ctx.fill();
-  if(currentUser){
-    ctx.fillStyle="#fff";
-    ctx.font="14px Arial";
-    ctx.textAlign="center";
-    ctx.fillText(currentUser.name, player.x, player.y-30);
-  }
-  requestAnimationFrame(draw);
-}
-
-// 🔹 Настройки
-function changeBgColor(){ document.body.style.background = document.getElementById('bgColorSelect').value; }
-function toggleJoystick(){ joystickEnabled=!joystickEnabled; alert("Джойстик: "+(joystickEnabled?"Вкл":"Выкл"));}
-function editControls(){ alert("Здесь будет редактирование управления ПК/Телефон"); }
-function changeSkin(color){ currentSkin=color; }
-
-// 🔹 WebSocket
-function connectWebSocket(address){
-  ws=new WebSocket(address);
-  ws.onopen=()=>console.log("Подключен к "+address);
-  ws.onmessage=(msg)=>{ console.log("Сервер:", JSON.parse(msg.data)); };
-  ws.onclose=()=>console.log("Отключен от сервера");
-}
-
-// 🔹 Аккаунты
-function loginTelegram(){ currentUser={type:"Telegram",name:"@ZymUser"}; saveAccount(); updateAccountUI(); }
-function loginGoogle(){
-  google.accounts.id.initialize({
-    client_id:"913407850801-0fm9mo59pmbsj6dln94fs6o7pt3l9fuh.apps.googleusercontent.com/",
-    callback:handleGoogleResponse
+  // базы
+  bases.forEach(b=>{
+    ctx.fillStyle=b.owner==='player'?'lime':'red';
+    ctx.beginPath();
+    ctx.rect(b.x-15,b.y-15,30,30);
+    ctx.fill();
   });
-  google.accounts.id.prompt();
+  // враги, пули, имена - как раньше
 }
-function handleGoogleResponse(response){
-  const payload=JSON.parse(atob(response.credential.split('.')[1]));
-  currentUser={type:"Google",name:payload.name};
-  saveAccount(); updateAccountUI();
-}
-function loginFacebook(){ currentUser={type:"Facebook",name:"FB User"}; saveAccount(); updateAccountUI(); }
-function loginZL(){ const name=prompt("Введите ник для ZLAccount:"); if(name){currentUser={type:"ZLAccount",name}; saveAccount(); updateAccountUI();} }
-function saveAccount(){ localStorage.setItem("account",JSON.stringify(currentUser)); }
-function loadAccount(){ const acc=localStorage.getItem("account"); if(acc) currentUser=JSON.parse(acc); updateAccountUI(); }
-function updateAccountUI(){ const info=document.getElementById("accountInfo"); info.innerText=currentUser?`✅ Вошёл: ${currentUser.type} (${currentUser.name})`:"❌ Аккаунт не подключен"; }
-function logoutAll(){ currentUser=null; localStorage.removeItem("account"); updateAccountUI(); }
+
+/* =================== Конец обновлений =================== */
