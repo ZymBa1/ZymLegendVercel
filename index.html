@@ -23,7 +23,7 @@
     <h1 id="gameTitle">ZymLegend</h1>
     <div id="topBar">
       <span id="accountStatus">Нет аккаунтов</span>
-      <button id="settingsBtn">⚙️ Настройки</button>
+      <button id="settingsBtn" onclick="openSettings()">⚙️ Настройки</button>
     </div>
   </header>
 
@@ -32,23 +32,10 @@
     <section id="menu" class="screen active">
       <div class="menuButtons">
         <button onclick="startSingle()">🎮 Играть Одиночный</button>
-        <button onclick="openServerSelect()">🌐 Играть Онлайн</button>
         <button onclick="openAccounts()">👤 Аккаунты</button>
         <button onclick="openSkins()">🎨 Скины</button>
         <button onclick="openClans()">⚔️ Кланы</button>
       </div>
-    </section>
-
-    <!-- Выбор серверов -->
-    <section id="servers" class="screen">
-      <button class="backBtn" onclick="openMenu()">⬅ Назад</button>
-      <h2>Сервера</h2>
-      <div id="serverList">
-        <button onclick="connectToServer('RU')">1. RuServer</button>
-        <button onclick="connectToServer('ENG')">2. EngServer</button>
-      </div>
-      <input id="customServer" placeholder="Добавить свой сервер (URL)">
-      <button onclick="addCustomServer()">Добавить сервер</button>
     </section>
 
     <!-- Игра -->
@@ -76,10 +63,11 @@
       <h2>Аккаунты</h2>
       <div class="accountsBlock">
         <button onclick="connectTelegram()">📲 Telegram WebApp</button>
+        <button onclick="connectFacebook()">📘 Facebook</button>
         <button onclick="openZLAuth()">🛡 ZLAccount</button>
       </div>
       <h3>Вход через Google</h3>
-      <div id="g_id_onload" data-client_id="913407850801-0fm9mo59pmbsj6dln94fs6o7pt3l9fuh.apps.googleusercontent.com/" data-callback="handleGoogleResponse"></div>
+      <div id="g_id_onload" data-client_id="YOUR_GOOGLE_CLIENT_ID" data-callback="handleGoogleResponse"></div>
       <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="signin_with" data-shape="rect" data-logo_alignment="left"></div>
       <div style="margin-top:12px;">
         <button onclick="logoutAll()">Выйти из всех аккаунтов</button>
