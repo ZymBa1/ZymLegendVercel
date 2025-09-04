@@ -3,8 +3,6 @@
 <head>
   <meta charset="utf-8" />
   <title>ZymLegend - Fix Update 1.1</title>
-
-  <!-- Стили -->
   <link rel="stylesheet" href="style.css">
 
   <!-- Telegram WebApp SDK -->
@@ -13,7 +11,6 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-  <!-- Прелоад -->
   <div id="preloader">
     <div class="loader"></div>
     <p>Загрузка игры...</p>
@@ -23,17 +20,20 @@
     <h1 id="gameTitle">ZymLegend</h1>
     <div id="topBar">
       <span id="accountStatus">Нет аккаунтов</span>
-      <button id="settingsBtn" onclick="openSettings()">⚙️ Настройки</button>
+      <select id="langSelect" onchange="changeLanguage(this.value)">
+        <option value="ru">Русский</option>
+        <option value="en">English</option>
+        <option value="tg">Таджик</option>
+      </select>
     </div>
   </header>
 
   <main>
-    <!-- Меню -->
     <section id="menu" class="screen active">
       <div class="menuButtons">
         <button onclick="startSingle()">🎮 Играть Одиночный</button>
         <button onclick="openAccounts()">👤 Аккаунты</button>
-        <button onclick="openSkins()">🎨 Скины</button>
+        <button onclick="openSettings()">⚙️ Настройки</button>
         <button onclick="openClans()">⚔️ Кланы</button>
       </div>
     </section>
@@ -48,13 +48,8 @@
         <div id="baseStatus">Базы захвачены: 0</div>
       </div>
 
-      <!-- Джойстики -->
-      <div id="joystickMove" class="joystick" draggable="false" aria-hidden="true">
-        <div class="stick"></div>
-      </div>
-      <div id="joystickShoot" class="joystick" draggable="false" aria-hidden="true">
-        <div class="stick"></div>
-      </div>
+      <div id="joystickMove" class="joystick"><div class="stick"></div></div>
+      <div id="joystickShoot" class="joystick"><div class="stick"></div></div>
     </section>
 
     <!-- Аккаунты -->
@@ -63,46 +58,32 @@
       <h2>Аккаунты</h2>
       <div class="accountsBlock">
         <button onclick="connectTelegram()">📲 Telegram WebApp</button>
-        <button onclick="connectFacebook()">📘 Facebook</button>
         <button onclick="openZLAuth()">🛡 ZLAccount</button>
+        <button onclick="facebookLogin()">📘 Facebook</button>
       </div>
+
       <h3>Вход через Google</h3>
-      <div id="g_id_onload" data-client_id="YOUR_GOOGLE_CLIENT_ID" data-callback="handleGoogleResponse"></div>
-      <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="signin_with" data-shape="rect" data-logo_alignment="left"></div>
+      <div id="g_id_onload"
+           data-client_id="ВАШ_GOOGLE_CLIENT_ID"
+           data-callback="handleGoogleResponse">
+      </div>
+      <div class="g_id_signin"
+           data-type="standard"
+           data-size="large"
+           data-theme="outline"
+           data-text="signin_with"
+           data-shape="rect"
+           data-logo_alignment="left">
+      </div>
       <div style="margin-top:12px;">
         <button onclick="logoutAll()">Выйти из всех аккаунтов</button>
       </div>
-    </section>
-
-    <!-- ZLAccount -->
-    <section id="zlAuth" class="screen">
-      <button class="backBtn" onclick="openAccounts()">⬅ Назад</button>
-      <h2>ZLAccount</h2>
-      <input id="zlLogin" class="inputBox" placeholder="Логин"><br/>
-      <input id="zlPass" type="password" class="inputBox" placeholder="Пароль"><br/>
-      <button onclick="zlRegister()">📝 Регистрация</button>
-      <button onclick="zlLoginFunc()">🔑 Вход</button>
-      <p id="zlMsg"></p>
-    </section>
-
-    <!-- Скины -->
-    <section id="skins" class="screen">
-      <button class="backBtn" onclick="openMenu()">⬅ Назад</button>
-      <h2>Скины</h2>
-      <div id="skinList" class="skinList"></div>
     </section>
 
     <!-- Настройки -->
     <section id="settings" class="screen">
       <button class="backBtn" onclick="closeSettings()">⬅ Назад</button>
       <h2>Настройки</h2>
-      <div class="settingSection">
-        <h3>Язык</h3>
-        <select id="langSelect">
-          <option value="ru">Русский</option>
-          <option value="en">English</option>
-        </select>
-      </div>
       <div class="settingSection">
         <h3>Сложность</h3>
         <select id="difficultySelect">
@@ -120,15 +101,7 @@
         <label><input type="checkbox" id="enableShootJoystick"> Включить джойстик для стрельбы</label><br/>
         <label><input type="checkbox" id="movableJoysticks"> Перемещаемые джойстики</label>
       </div>
-      <div class="settingSection">
-        <h3>Аккаунты</h3>
-        <button onclick="logoutTelegram()">Выйти Telegram</button>
-        <button onclick="logoutGoogle()">Выйти Google</button>
-        <button onclick="logoutZL()">Выйти ZLAccount</button>
-      </div>
-      <div style="margin-top:16px;">
-        <button onclick="saveSettings()">Сохранить настройки</button>
-      </div>
+      <button onclick="saveSettings()">Сохранить настройки</button>
     </section>
 
     <!-- Кланы -->
@@ -143,7 +116,7 @@
   </main>
 
   <footer>
-    <small>ZymLegend — Fix Update 1.1 </small>
+    <small>ZymLegend - Разработано ZymBa1</small>
   </footer>
 
   <script src="game.js"></script>
