@@ -1,173 +1,77 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8">
   <title>ZymLegend Online</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-
   <link rel="stylesheet" href="style.css">
-
   <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-  <header>
-    <h1 id="gameTitle">ZymLegend Online</h1>
-    <div id="topBar">
-      <span id="accountStatus">Нет аккаунтов</span>
-      <button id="settingsBtn">⚙️ Настройки</button>
+  <!-- Главное меню -->
+  <div id="menu">
+    <h1>ZymLegend 🌍</h1>
+    <button onclick="showScreen('servers')">🌐 Онлайн</button>
+    <button onclick="startOffline()">🎮 Оффлайн</button>
+    <button onclick="showScreen('settings')">⚙️ Настройки</button>
+    <button onclick="showScreen('accounts')">👤 Аккаунты</button>
+    <button onclick="showScreen('skins')">🖌 Скины</button>
+  </div>
+
+  <!-- Сервера -->
+  <div id="servers" class="hidden">
+    <h2>Сервера</h2>
+    <ul id="serverList"></ul>
+    <button onclick="addServer()">➕ Добавить сервер</button>
+    <button onclick="showScreen('menu')">⬅ Назад</button>
+  </div>
+
+  <!-- Настройки -->
+  <div id="settings" class="hidden">
+    <h2>Настройки</h2>
+    <label>Фон:
+      <select id="bgColorSelect" onchange="changeBgColor()">
+        <option value="#111">Черный</option>
+        <option value="#013220">Зеленый</option>
+        <option value="#001f3f">Синий</option>
+      </select>
+    </label><br>
+    <button onclick="toggleJoystick()">🎮 Джойстик Вкл/Выкл</button>
+    <button onclick="editControls()">🕹 Редактировать управление</button>
+    <button onclick="showScreen('menu')">⬅ Назад</button>
+  </div>
+
+  <!-- Аккаунты -->
+  <div id="accounts" class="hidden">
+    <h2>Аккаунты</h2>
+    <button onclick="loginTelegram()">Войти через Telegram</button>
+    <button onclick="loginGoogle()">Войти через Google</button>
+    <button onclick="loginFacebook()">Войти через Facebook</button>
+    <button onclick="loginZL()">Войти через ZLAccount</button>
+    <div id="accountInfo"></div>
+    <button onclick="logoutAll()">🚪 Выйти</button>
+    <button onclick="showScreen('menu')">⬅ Назад</button>
+  </div>
+
+  <!-- Скины -->
+  <div id="skins" class="hidden">
+    <h2>Скины</h2>
+    <button onclick="changeSkin('green')">🟢 Спецназ</button>
+    <button onclick="changeSkin('red')">🔴 Террорист</button>
+    <button onclick="showScreen('menu')">⬅ Назад</button>
+  </div>
+
+  <!-- Игра -->
+  <div id="game" class="hidden">
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="hud">
+      <span id="hp">HP: 100</span>
+      <span id="xp">XP: 0</span>
     </div>
-  </header>
-
-  <main>
-    <!-- Menu -->
-    <section id="menu" class="screen active">
-      <div class="menuButtons">
-        <button onclick="startSingle()">Играть Одиночный</button>
-        <button onclick="openServers()">Онлайн </button>
-        <button onclick="openAccounts()">Аккаунты</button>
-        <button onclick="openSkins()">Скины</button>
-      </div>
-      <div id="currentServerBadge" class="badge"></div>
-    </section>
-
-    <!-- Servers browser -->
-    <section id="servers" class="screen">
-      <button class="backBtn" onclick="openMenu()">⬅ Назад</button>
-      <h2>Серверы</h2>
-      <div class="serverActions">
-        <button onclick="openAddServer()">＋ Добавить сервер</button>
-      </div>
-      <div id="serverList" class="serverList"></div>
-
-      <!-- Modal -->
-      <div id="serverModal" class="modal hidden">
-        <div class="modalBox">
-          <h3 id="serverModalTitle">Добавить сервер</h3>
-          <label>Название</label>
-          <input id="srvName" class="inputBox" placeholder="My Server">
-          <label>Адрес (ws:// или wss://)</label>
-          <input id="srvAddr" class="inputBox" placeholder="wss://example.com">
-          <label>Язык</label>
-          <select id="srvLang" class="inputBox">
-            <option value="ru">Русский</option>
-            <option value="en">English</option>
-          </select>
-          <div class="modalBtns">
-            <button onclick="closeServerModal()">Отмена</button>
-            <button id="serverModalSaveBtn">Сохранить</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Game -->
-    <section id="game" class="screen">
-      <button id="homeBtn" onclick="goHome()" class="homeBtn">🏠 Домой</button>
-      <canvas id="gameCanvas" width="900" height="520"></canvas>
-      <div id="hud">
-        <div id="status">HP: 100 | Врагов: 0</div>
-        <div id="xpStatus">XP: 0 | Level: 1</div>
-        <div id="serverConnection" class="muted">Offline</div>
-      </div>
-
-      <!-- Joysticks -->
-      <div id="joystickMove" class="joystick" draggable="false"><div class="stick"></div></div>
-      <div id="joystickShoot" class="joystick" draggable="false"><div class="stick"></div></div>
-    </section>
-
-    <!-- Accounts -->
-    <section id="accounts" class="screen">
-      <button class="backBtn" onclick="openMenu()">⬅ Назад</button>
-      <h2>Аккаунты</h2>
-      <div class="accountsBlock">
-        <button onclick="connectTelegram()">Telegram WebApp</button>
-        <button onclick="openZLAuth()">ZLAccount</button>
-      </div>
-
-      <h3>Вход через Google</h3>
-      <div id="g_id_onload"
-           data-client_id="913407850801-0fm9mo59pmbsj6dln94fs6o7pt3l9fuh.apps.googleusercontent.com/"
-           data-callback="handleGoogleResponse"></div>
-      <div class="g_id_signin"
-           data-type="standard" data-size="large" data-theme="outline"
-           data-text="signin_with" data-shape="rect" data-logo_alignment="left"></div>
-
-      <div style="margin-top:12px;">
-        <button onclick="logoutAll()">Выйти из всех аккаунтов</button>
-      </div>
-    </section>
-
-    <!-- ZLAccount -->
-    <section id="zlAuth" class="screen">
-      <button class="backBtn" onclick="openAccounts()">⬅ Назад</button>
-      <h2>ZLAccount</h2>
-      <input id="zlLogin" class="inputBox" placeholder="Логин"><br/>
-      <input id="zlPass" type="password" class="inputBox" placeholder="Пароль"><br/>
-      <button onclick="zlRegister()">Регистрация</button>
-      <button onclick="zlLoginFunc()">Вход</button>
-      <p id="zlMsg"></p>
-    </section>
-
-    <!-- Skins -->
-    <section id="skins" class="screen">
-      <button class="backBtn" onclick="openMenu()">⬅ Назад</button>
-      <h2>Скины</h2>
-      <div id="skinList" class="skinList"></div>
-    </section>
-
-    <!-- Settings -->
-    <section id="settings" class="screen">
-      <button class="backBtn" onclick="closeSettings()">⬅ Назад</button>
-      <h2>Настройки</h2>
-
-      <div class="settingSection">
-        <h3>Язык</h3>
-        <select id="langSelect">
-          <option value="ru">Русский</option>
-          <option value="en">English</option>
-        </select>
-      </div>
-
-      <div class="settingSection">
-        <h3>Цвет фона</h3>
-        <select id="bgColorSelect">
-          <option value="#111">Черный</option>
-          <option value="#001f3f">Синий</option>
-          <option value="#013220">Зеленый</option>
-          <option value="#2e003e">Фиолетовый</option>
-        </select>
-      </div>
-
-      <div class="settingSection">
-        <h3>Управление (ПК)</h3>
-        <div id="keyMapList"></div>
-        <p class="hint">Нажми "Изменить" и затем любую клавишу, чтобы переназначить.</p>
-      </div>
-
-      <div class="settingSection">
-        <h3>Управление (Телефон)</h3>
-        <label><input type="checkbox" id="enableShootJoystick"> Включить джойстик для стрельбы</label><br/>
-        <label><input type="checkbox" id="movableJoysticks"> Разрешить перемещение джойстиков</label>
-        <div class="hint">Перемещай джойстики в игровом экране, их позиция сохранится.</div>
-      </div>
-
-      <div class="settingSection">
-        <h3>Аккаунты</h3>
-        <button onclick="logoutTelegram()">Выйти Telegram</button>
-        <button onclick="logoutGoogle()">Выйти Google</button>
-        <button onclick="logoutZL()">Выйти ZLAccount</button>
-      </div>
-
-      <div style="margin-top:16px;">
-        <button onclick="saveSettings()">Сохранить настройки</button>
-      </div>
-    </section>
-  </main>
-
-  <footer><small>ZymLegend — Fix update 1.1</small></footer>
+    <button id="exitBtn" onclick="exitGame()">🏠 Меню</button>
+  </div>
 
   <script src="game.js"></script>
 </body>
