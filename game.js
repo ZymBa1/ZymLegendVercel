@@ -1,165 +1,97 @@
-/* =================== Preloader =================== */
+// Preloader
 window.addEventListener('load', () => {
-  setTimeout(() => {
-    document.getElementById('preloader').style.display = 'none';
-  }, 1000);
+  setTimeout(()=>{ document.getElementById('preloader').style.display='none'; }, 1000);
 });
 
-/* =================== Переменные =================== */
-let gameActive = false;
-let canvas = document.getElementById('gameCanvas');
-let ctx = canvas.getContext('2d');
-
-let player = { x: 400, y: 250, size: 15, hp: 100 };
-let playerSkin = { color: 'lime' };
+// Переменные
+let player = {x:400, y:250, size:20, hp:100};
 let enemies = [];
-let bases = [
-  { x: 100, y: 100, owner: null },
-  { x: 700, y: 400, owner: null }
-];
-let difficulty = 'normal';
-let settings = { lang: 'ru', enableShootJoystick: true, movableJoysticks: true };
-let zlUser = null;
+let bases = [{x:100,y:100,owner:null},{x:700,y:400,owner:null}];
 let clans = [];
+let difficulty = 'normal';
+let gameActive = false;
+let playerSkin = {color:'lime'};
+let settings = {enableShootJoystick:true, movableJoysticks:true, lang:'ru'};
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-/* =================== Экран =================== */
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+// Меню
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-function openMenu() { showScreen('menu'); }
-function goHome() { showScreen('menu'); }
-function openSettings() { showScreen('settings'); }
-function closeSettings() { showScreen('menu'); }
-
-/* =================== Игра =================== */
-function startSingle() {
-  gameActive = true;
-  player.x = 400; player.y = 250; player.hp = 100;
-  enemies = [];
-  updateBaseHUD();
-  spawnWave(5);
+function startSingle(){
+  gameActive=true;
   showScreen('game');
   requestAnimationFrame(gameLoop);
 }
 
-/* =================== Боты =================== */
-function spawnWave(count) {
-  for (let i = 0; i < count; i++) {
-    let enemy = { x: Math.random() * canvas.width, y: Math.random() * canvas.height, size: 12, hp: 50, color: 'red' };
-    enemies.push(enemy);
-  }
-}
-
-/* =================== Обновление =================== */
-function update() {
-  if (!gameActive) return;
-
-  // Движение ботов
-  enemies.forEach(e => {
-    let dx = player.x - e.x;
-    let dy = player.y - e.y;
-    let dist = Math.hypot(dx, dy);
-    if (dist > 0) {
-      e.x += (dx / dist) * 1.5;
-      e.y += (dy / dist) * 1.5;
-    }
-    if (dist < player.size + e.size) {
-      player.hp -= 0.5; // урон
-    }
-  });
-
-  // Захват баз
-  bases.forEach(b => {
-    if (Math.hypot(player.x - b.x, player.y - b.y) < 30) {
-      b.owner = 'player';
-    }
-  });
-
-  updateBaseHUD();
-
-  // Проверка смерти игрока
-  if (player.hp <= 0) {
-    gameActive = false;
-    alert('Вы проиграли!');
-    goHome();
-  }
-}
-
-/* =================== Отрисовка =================== */
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Игрок
-  ctx.fillStyle = playerSkin.color;
-  ctx.beginPath();
-  ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Базы
-  bases.forEach(b => {
-    ctx.fillStyle = b.owner === 'player' ? 'lime' : 'red';
-    ctx.fillRect(b.x - 15, b.y - 15, 30, 30);
-  });
-
-  // Враги
-  enemies.forEach(e => {
-    ctx.fillStyle = e.color;
-    ctx.beginPath();
-    ctx.arc(e.x, e.y, e.size, 0, Math.PI * 2);
-    ctx.fill();
-  });
-
-  // HUD
-  document.getElementById('status').innerText = `HP: ${Math.round(player.hp)} | Врагов: ${enemies.length}`;
-}
-
-/* =================== HUD =================== */
-function updateBaseHUD() {
-  const owned = bases.filter(b => b.owner === 'player').length;
-  document.getElementById('baseStatus').innerText = `Базы захвачены: ${owned}`;
-}
-
-/* =================== Игровой цикл =================== */
-function gameLoop() {
-  if (!gameActive) return;
+// Игровой цикл
+function gameLoop(){
   update();
   draw();
-  requestAnimationFrame(gameLoop);
+  if(gameActive) requestAnimationFrame(gameLoop);
 }
 
-/* =================== Кланы =================== */
-function openClans() { showScreen('clans'); renderClans(); }
-function createClan() {
-  const name = document.getElementById('clanName').value.trim();
-  if (name) clans.push({ name, members: [zlUser?.login || 'Игрок'] });
-  renderClans();
-}
-function renderClans() {
-  const div = document.getElementById('clanList');
-  div.innerHTML = '';
-  clans.forEach(c => {
-    const el = document.createElement('div');
-    el.innerText = `${c.name} (${c.members.length} участника)`;
-    div.appendChild(el);
+// Обновления
+function update(){
+  // захват баз
+  bases.forEach(b=>{
+    if(Math.hypot(player.x-b.x,player.y-b.y)<30) b.owner='player';
   });
 }
 
-/* =================== Аккаунты =================== */
-function connectTelegram() { alert('Telegram WebApp подключён!'); }
-function connectFacebook() { alert('Facebook подключён!'); }
-function openZLAuth() { showScreen('zlAuth'); }
-function zlRegister() { alert('Регистрация ZLAccount!'); }
-function zlLoginFunc() { alert('Вход ZLAccount!'); zlUser = { login: document.getElementById('zlLogin').value }; }
-function logoutAll() { alert('Выход из всех аккаунтов!'); zlUser = null; }
+// Рисование
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // игрок
+  ctx.fillStyle=playerSkin.color;
+  ctx.beginPath();
+  ctx.arc(player.x,player.y,player.size,0,Math.PI*2);
+  ctx.fill();
+  // базы
+  bases.forEach(b=>{
+    ctx.fillStyle=b.owner==='player'?'lime':'red';
+    ctx.fillRect(b.x-15,b.y-15,30,30);
+  });
+}
 
-/* =================== Настройки =================== */
-document.getElementById('difficultySelect').addEventListener('change', e => difficulty = e.target.value);
-document.getElementById('enableShootJoystick').addEventListener('change', e => settings.enableShootJoystick = e.target.checked);
-document.getElementById('movableJoysticks').addEventListener('change', e => settings.movableJoysticks = e.target.checked);
-document.getElementById('langSelect').addEventListener('change', e => settings.lang = e.target.value);
-function saveSettings() { alert('Настройки сохранены!'); }
-function logoutTelegram() { alert('Telegram отключён'); }
-function logoutGoogle() { alert('Google отключён'); }
-function logoutZL() { alert('ZLAccount отключён'); }
+// Кланы
+function openClans(){ showScreen('clans'); renderClans(); }
+function createClan(){
+  const name=document.getElementById('clanName').value.trim();
+  if(name) clans.push({name,members:['player']});
+  renderClans();
+}
+function renderClans(){
+  const div=document.getElementById('clanList');
+  div.innerHTML='';
+  clans.forEach(c=>{ div.innerHTML+=`${c.name} (${c.members.length} участника)<br>`; });
+}
+
+// Настройки
+const difficultySelect = document.getElementById('difficultySelect');
+difficultySelect?.addEventListener('change',(e)=>{difficulty=e.target.value;});
+function saveSettings(){
+  settings.enableShootJoystick=document.getElementById('enableShootJoystick').checked;
+  settings.movableJoysticks=document.getElementById('movableJoysticks').checked;
+  alert('Настройки сохранены');
+}
+
+// Языки
+function changeLanguage(lang){ settings.lang=lang; alert('Выбран язык: '+lang); }
+
+// Аккаунты
+function connectTelegram(){ alert('Telegram WebApp подключен!'); }
+function openZLAuth(){ alert('ZLAccount окно открыто!'); }
+function facebookLogin(){ alert('Ошибка: на данный момент сайт не может подключиться к серверам Meta.'); }
+function handleGoogleResponse(response){ console.log('Google JWT:', response.credential); alert('Google аккаунт подключен!'); }
+function logoutAll(){ alert('Все аккаунты отключены'); }
+
+// Навигация
+function openMenu(){ showScreen('menu'); }
+function openAccounts(){ showScreen('accounts'); }
+function openSettings(){ showScreen('settings'); }
+function goHome(){ showScreen('menu'); }
+
